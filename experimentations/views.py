@@ -1,4 +1,5 @@
 import logging
+from statistics import mean
 from django.shortcuts import render, get_object_or_404
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
@@ -172,51 +173,133 @@ class ExperimentationViewSet(ModelViewSet):
         """Cette méthode permet d'envoyer toutes les données nécessaires pour le tableau de bord de l'expérimentation"""
 
         experimentation = get_object_or_404(Experimentation, pk=experimentation_id)
+
         participant_experiments = ParticipantExperiment.objects.filter(experimentation=experimentation)
 
         # Dictionnaire pour les données de fréquence cardiaque par participant
+
         heart_rate_by_participant = {}
-        # Dictionnaire pour les valeurs min et max de fréquence cardiaque par participant
-        heart_rate_ranges = {}
+
+        # Variables pour stocker les valeurs globales min et max
+
+        global_min = None
+
+        global_max = None
+
+        all_averages = []
 
         # Obtenir les données de fréquence cardiaque pour chaque participant
+
         for participant_experiment in participant_experiments:
+
             pilote = participant_experiment.pilote
+
             heart_rate_measurements = participant_experiment.heart_rate_measurements.all()
 
             # Initialiser les listes de labels et de données pour chaque participant
+
             labels = []
+
             heart_rate_data = []
 
             # Remplir les données de fréquence cardiaque
+
             for measurement in heart_rate_measurements:
+
                 labels.append(measurement.heure_mesure.strftime("%H:%M"))
+
                 heart_rate_data.append(measurement.fréquence_cardiaque)
 
             # Obtenir le min et le max des fréquences cardiaques pour chaque participant
-            heart_rate_values = [m.fréquence_cardiaque for m in heart_rate_measurements]
-            min_heart_rate = min(heart_rate_values) if heart_rate_values else None
-            max_heart_rate = max(heart_rate_values) if heart_rate_values else None
+
+            min_heart_rate = participant_experiment.min_heart_rate
+
+            max_heart_rate = participant_experiment.max_heart_rate
+
+            average_heart_rate = participant_experiment.average_heart_rate
+
+        
+
+            # Ajouter la moyenne à la liste des moyennes
+
+            if average_heart_rate is not None:
+
+                all_averages.append(average_heart_rate)
+
+            # Mettre à jour les valeurs globales min et max
+
+            if min_heart_rate is not None:
+
+                if global_min is None or min_heart_rate < global_min:
+
+                    global_min = min_heart_rate
+
+            if max_heart_rate is not None:
+
+                if global_max is None or max_heart_rate > global_max:
+
+                    global_max = max_heart_rate
 
             # Ajouter les données de fréquence cardiaque au dictionnaire
+
             heart_rate_by_participant[pilote.id] = {
+
+                'id': f"{pilote.id}",
+
                 'nom': f"{pilote.prenom} {pilote.nom}",
+
                 'role':f"{pilote.role}",
+
                 'photo':f"{pilote.photo}",
+
                 'labels': labels,
+
                 'data': heart_rate_data,
+
+                'average_heart_rate': average_heart_rate,
+
+                'min_heart_rate': min_heart_rate,
+
+                'max_heart_rate': max_heart_rate,
+
             }
 
-            # Stocker les min et max dans le dictionnaire avec l'ID du participant
-            heart_rate_ranges[pilote.id] = {
-                'min': min_heart_rate,
-                'max': max_heart_rate
-            }
+        # Calculer la moyenne globale des moyennes des participants
+
+        global_average = mean(all_averages) if all_averages else None
+
+        # Ajout des détails de l'expérimentation
+
+        experimentation_details = {
+
+            'nom': experimentation.nom,
+
+            'date': experimentation.date.strftime("%d/%m/%Y"),
+
+            'temps_debut': experimentation.temps_debut.strftime("%H:%M"),
+
+            'temps_fin': experimentation.temps_fin.strftime("%H:%M"),
+
+        }
 
         # Contexte de la réponse avec les données de fréquence cardiaque par participant et les min/max
+
         context = {
+
             'heart_rate_by_participant': heart_rate_by_participant,
-            'heart_rate_ranges': heart_rate_ranges,  # Ajouter min et max
+
+            'global_heart_rate_range': {
+
+                'min': global_min,
+
+                'max': global_max,
+
+            },
+
+            'global_average_heart_rate': global_average,  # Moyenne globale calculée
+
+            'experimentation_details': experimentation_details,  # Détails de l'expérimentation
+
         }
 
         return Response(context)

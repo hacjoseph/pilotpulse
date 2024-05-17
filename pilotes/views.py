@@ -116,7 +116,7 @@ class PiloteViewSet(ModelViewSet):
             
             # Ajouter les mesures de fréquence cardiaque à la liste de l'expérimentation correspondante
             for measurement in heart_rate_measurements:
-                heart_rate_by_experimentation[experiment_id]['labels'].append(measurement.heure_mesure)
+                heart_rate_by_experimentation[experiment_id]['labels'].append(measurement.heure_mesure.strftime("%H:%M"))
                 heart_rate_by_experimentation[experiment_id]['data'].append(measurement.fréquence_cardiaque)
 
         # Récupération des membres de chaque expérimentation

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-#7^z_(ya8gm61gsahpdot1_^syq0ml)3)o(^-5i$nqw6bhjs5n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['pilotpulse.pythonanywhere.com']
 
 # L'identifiant et le code secret de l'appilcation fitbit cree sur le site de fitbit
 # A utiliser pour obtenir le token
