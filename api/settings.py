@@ -99,10 +99,10 @@ WSGI_APPLICATION = 'api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'pilotpulse',
-        'USER': '',
+        'NAME': 'pilotpulse$default',
+        'USER': 'pilotpulse',
         'PASSWORD': '',
-        'HOST':'localhost',
+        'HOST':'pilotpulse.mysql.pythonanywhere-services.com',
         'PORT':'3306',
     }
 }
