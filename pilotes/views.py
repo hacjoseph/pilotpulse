@@ -86,7 +86,6 @@ class PiloteViewSet(ModelViewSet):
     @api_view(['GET'])
     def dashboard_pilote(request, pilote_id):
         """Cette méthode permet d'envoyer toutes les données nécessaires pour le dashboard d'un pilote."""
-        
         # Récupération des détails du pilote
         pilote = get_object_or_404(Pilote, pk=pilote_id)
         pilote_serializer = PiloteSerializer(pilote)
@@ -108,7 +107,10 @@ class PiloteViewSet(ModelViewSet):
                 # Créer une nouvelle entrée pour cette expérimentation
                 heart_rate_by_experimentation[experiment_id] = {
                     'labels': [],
-                    'data': []
+                    'data': [],
+                    'min': participant_experiment.min_heart_rate,
+                    'max': participant_experiment.max_heart_rate,
+                    'average': participant_experiment.average_heart_rate,
                 }
             
             # Récupérer les mesures de fréquence cardiaque pour ce participant
@@ -122,7 +124,7 @@ class PiloteViewSet(ModelViewSet):
         # Récupération des membres de chaque expérimentation
         experiment_members = {}
         for experimentation in experimentations:
-            members = ParticipantExperiment.objects.filter(experimentation=experimentation.id).values_list('pilote__prenom', 'pilote__nom')
+            members = ParticipantExperiment.objects.filter(experimentation=experimentation.id).values_list('pilote__id','pilote__prenom', 'pilote__nom')
             experiment_members[experimentation.id] = list(members)  # Conversion en liste
         
         # Création du contexte de réponse
@@ -130,7 +132,7 @@ class PiloteViewSet(ModelViewSet):
             'pilote': pilote_serializer.data,
             'pilote_id': pilote.id,
             'experimentations': experimentations_serializer.data,
-            'heart_rate_by_experimentation': heart_rate_by_experimentation,  # Correction ici
+            'heart_rate_by_experimentation': heart_rate_by_experimentation,
             'experiment_members': experiment_members,
         }
         
