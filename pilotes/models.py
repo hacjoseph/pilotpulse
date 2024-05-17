@@ -18,6 +18,7 @@ class Pilote(models.Model):
     sexe = models.CharField(max_length=1, choices=SEXE_CHOICES)
     fitbit_user = models.ForeignKey(FitbitUser, on_delete=models.SET_NULL, blank=True, null=True, related_name='pilotes')
     def __str__(self):
-        return f"{"prenom":self.prenom} {"nom":self.nom}"
+        return f'{{"prenom": "{self.prenom}", "nom": "{self.nom}"}}'
+
 
 
