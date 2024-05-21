@@ -33,7 +33,7 @@ def authorize_fitbit(request:HttpRequest, pilote_id=None):
         
         code_verifier, code_challenge = pkce.generate_pkce_pair()
         authorization_url = 'https://www.fitbit.com/oauth2/authorize'
-        redirect_uri = 'http://127.0.0.1:8000/fitbit/callback/'
+        redirect_uri = 'https://pilotpulse.pythonanywhere.com/fitbit/callback/'
         scopes = 'heartrate' 
         
         # Generation d'un state unique pour assurer la connexion entre notre applicaion et le site de fitbit
@@ -92,7 +92,7 @@ def fitbit_callback(request):
         # code de l'application creer sur le site de fitbit
         'client_id': settings.FITBIT_CLIENT_ID,
         'grant_type': 'authorization_code',
-        'redirect_uri': 'http://127.0.0.1:8000/fitbit/callback/',  # Update with your actual redirect URL
+        'redirect_uri': 'https://pilotpulse.pythonanywhere.com/fitbit/callback/',  # Update with your actual redirect URL
         'code': code,
         'code_verifier': code_verifier
     }
@@ -159,8 +159,8 @@ def refresh_access_token(refresh_token):
     payload = {
         'grant_type': 'refresh_token',
         'refresh_token': refresh_token,
-        'client_id': '23RT7L',
-        'client_secret': 'd88357cf42ba70d81d9514e4e3aa9a42'
+        'client_id': settings.FITBIT_CLIENT_ID,
+        'client_secret': settings.FITBIT_CLIENT_SECRET
     }
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded'
