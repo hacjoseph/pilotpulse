@@ -250,7 +250,7 @@ class ExperimentationViewSet(ModelViewSet):
 
                 'role':f"{pilote.role}",
 
-                'photo':f"{pilote.photo}",
+                'photo':f"/media/{pilote.photo}",
 
                 'labels': labels,
 
