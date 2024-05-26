@@ -180,12 +180,11 @@ class ExperimentationViewSet(ModelViewSet):
 
         heart_rate_by_participant = {}
 
+
         # Variables pour stocker les valeurs globales min et max
-
         global_min = None
-
         global_max = None
-
+        total_nbr_heart_rate = 0
         all_averages = []
 
         # Obtenir les données de fréquence cardiaque pour chaque participant
@@ -211,75 +210,58 @@ class ExperimentationViewSet(ModelViewSet):
                 heart_rate_data.append(measurement.fréquence_cardiaque)
 
             # Obtenir le min et le max des fréquences cardiaques pour chaque participant
-
             min_heart_rate = participant_experiment.min_heart_rate
-
             max_heart_rate = participant_experiment.max_heart_rate
-
             average_heart_rate = participant_experiment.average_heart_rate
-
+            
         
-
             # Ajouter la moyenne à la liste des moyennes
-
             if average_heart_rate is not None:
-
                 all_averages.append(average_heart_rate)
 
             # Mettre à jour les valeurs globales min et max
-
             if min_heart_rate is not None:
-
                 if global_min is None or min_heart_rate < global_min:
-
                     global_min = min_heart_rate
 
             if max_heart_rate is not None:
-
                 if global_max is None or max_heart_rate > global_max:
-
                     global_max = max_heart_rate
+
+            # Calculer le nombre de valeurs de fréquence cardiaque dépassant 160
+            high_mental_load_count = sum(1 for entry in heart_rate_data if entry > 100)
+            participant_experiment.nbr_heart_rate = high_mental_load_count
+            participant_experiment.save()
 
             # Ajouter les données de fréquence cardiaque au dictionnaire
 
             heart_rate_by_participant[pilote.id] = {
-
                 'id': f"{pilote.id}",
-
                 'nom': f"{pilote.prenom} {pilote.nom}",
 
                 'role':f"{pilote.role}",
-
-                'photo':f"/media/{pilote.photo}",
-
+                'photo': f"/media/{pilote.photo}",
                 'labels': labels,
 
                 'data': heart_rate_data,
-
                 'average_heart_rate': average_heart_rate,
-
                 'min_heart_rate': min_heart_rate,
-
                 'max_heart_rate': max_heart_rate,
-
+                'nbr_heart_rate': high_mental_load_count,
             }
 
-        # Calculer la moyenne globale des moyennes des participants
+            total_nbr_heart_rate += high_mental_load_count
 
+
+        # Calculer la moyenne globale des moyennes des participants
         global_average = mean(all_averages) if all_averages else None
 
         # Ajout des détails de l'expérimentation
-
         experimentation_details = {
-
             'nom': experimentation.nom,
-
             'date': experimentation.date.strftime("%d/%m/%Y"),
-
             'temps_debut': experimentation.temps_debut.strftime("%H:%M"),
-
             'temps_fin': experimentation.temps_fin.strftime("%H:%M"),
-
         }
 
         # Contexte de la réponse avec les données de fréquence cardiaque par participant et les min/max
@@ -287,19 +269,13 @@ class ExperimentationViewSet(ModelViewSet):
         context = {
 
             'heart_rate_by_participant': heart_rate_by_participant,
-
             'global_heart_rate_range': {
-
                 'min': global_min,
-
                 'max': global_max,
-
             },
-
-            'global_average_heart_rate': global_average,  # Moyenne globale calculée
-
-            'experimentation_details': experimentation_details,  # Détails de l'expérimentation
-
+            'global_average_heart_rate': global_average,  
+            'total_nbr_heart_rate': total_nbr_heart_rate,
+            'experimentation_details': experimentation_details, 
         }
 
         return Response(context)

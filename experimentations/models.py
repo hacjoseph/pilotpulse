@@ -23,6 +23,7 @@ class ParticipantExperiment(models.Model):
     average_heart_rate = models.FloatField(blank=True, null=True)
     max_heart_rate = models.FloatField(blank=True, null=True)
     min_heart_rate = models.FloatField(blank=True, null=True)
+    nbr_heart_rate = models.FloatField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.pilote} - {self.experimentation}"
